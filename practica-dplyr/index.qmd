@@ -1,0 +1,246 @@
+---
+title: "Práctica de dplyr"
+author: "Sarita Venegas Vargas"
+format: html
+toc: true
+lang: es
+theme: morph
+---
+
+# Introducción
+Este documento presenta ejemplos de uso de las funciones del paquete dplyr.
+
+# Carga de datos 
+
+```{r}
+#| label: carga-paquetes
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(knitr)
+library(palmerpenguins)
+
+```
+
+# Carga de datos
+
+```{r}
+#| label: carga-datos
+
+delitos <- read_csv("estadisticaspoliciales2023.csv")
+```
+
+# select()
+
+## Ejemplo 1
+
+```{r}
+#| label: select-01
+
+# kable(penguins)
+
+# selección de las columnas de especie, sexo y año
+penguins|> 
+  select(species, sex, year)|>
+  kable()
+```
+
+
+## Ejemplo 2
+
+```{r}
+#| label: select-02
+
+# Cambio de nombre de las columnas
+penguins |> 
+  select(
+    especie = species,
+    sexo = sex,
+    anio = year
+  )|>
+  kable()
+```
+
+# Filter
+
+## Ejemplo 1
+
+```{r}
+#| label: filter-01
+
+# pingunos de la especie Adelie y que son machos que habitan en la isla Biscoe
+
+penguins |> filter(species == "Adelie" & sex == "male" & island == "Biscoe") |> 
+  kable()
+```
+
+## Ejemplo 2
+
+```{r}
+#| label: filter-02
+
+# Pinguinos que viven en la isla Biscoe o en la isla Torgersem
+
+penguins |>
+  filter(island == "Biscoe" | island== "Torgersem") |>
+  kable()
+
+```
+
+## Ejemplo 3
+
+```{r}
+#| label: filter-03
+
+# Robos cometidos en San Pedro de Montes de Oca
+
+delitos |> 
+  filter(Delito == "ROBO" & Canton == "MONTES DE OCA" & Distrito == "SAN PEDRO") |>
+  select(Delito, SubDelito, Victima, SubVictima, Canton, Distrito)|>
+  kable()
+```
+
+## Ejemplo 4
+
+```{r}
+#| label: filter-04
+
+# Pinguinos con NA en la columna de sexo
+penguins |>
+  filter(is.na(sex)) |> 
+  kable()
+  
+```
+
+# Arrange()
+## Ejemplo 1
+
+```{r}
+#| label: arrange-01
+
+delitos |> 
+  filter(Delito == "ROBO DE VEHICULO" & Canton == "MONTES DE OCA") |>
+  select(Delito, SubDelito, Hora, Canton, Distrito) |> 
+  arrange(Distrito, Hora) |>
+  kable()
+```
+
+## Ejemplo 2
+
+```{r}
+#| label: arrange-02
+
+penguins |>
+  arrange(desc(body_mass_g)) |>
+  kable()
+```
+
+# Mutate()
+## Ekemplo 3
+
+```{r}
+#| label: mutate-01
+
+penguins|>
+  select(species, body_mass_g) |> 
+  mutate(body_mass_g = body_mass_g / 1000) |> 
+  kable()
+```
+
+## Ejemplo 2
+
+```{r}
+#| label: mutate-02
+
+delitos |> 
+  mutate(Fecha_date = as.Date(delitos$Fecha, format= "%m/%d/%Y"))|>
+  filter(Canton == "MONTES DE OCA") |>
+  select(Fecha, Delito, SubDelito) |>
+  arrange(Fecha)|> 
+  kable()
+```
+
+# Summarize
+
+## Ejemplo 1
+
+```{r}
+#| label: summarize-01
+
+penguins |>
+  group_by(species) |>
+  summarize(
+    body_mass_g_min = min(body_mass_g, na.rm = TRUE),
+    body_mass_g_max = max(body_mass_g, na.rm = TRUE),
+    body_mass_g_mean = mean(body_mass_g, na.rm = TRUE),
+    n = n()
+  )
+```
+
+## Ejemplo 2
+
+```{r}
+#| label: summarize-02
+
+# Cantidad de homicidios por provincia y cantón 
+delitos |>
+  filter(Delito == "HOMICIDIO") |>
+  group_by(Provincia, Canton) |>
+  summarize(
+    homicidios_2023 = n()
+  ) |>
+  arrange(desc(homicidios_2023)) |>
+  kable()
+```
+
+## Ejemplo 3
+
+```{r}
+#| label: summarize-03
+
+# Cantidad de homicidios por género 
+delitos |>
+  filter(Delito == "HOMICIDIO") |>
+  group_by(Genero) |>
+  summarize(
+    homicidios_2023 = n()
+  ) |>
+  arrange(desc(homicidios_2023)) |>
+  kable()
+```
+
+
+## Ejemplo 4
+
+```{r}
+#| label: summarize-04
+
+# Cantidad de asaltos por edad
+delitos |>
+  filter(Delito == "ASALTO") |>
+  group_by(Edad) |>
+  summarize(
+    asaltos_2023 = n()
+  ) |>
+  arrange(desc(asaltos_2023)) |>
+  kable()
+```
+
+## Ejemplo 5
+
+```{r}
+#| label: summarize-05
+penguins |>
+  summarise(body_mass_g_mean = mean(body_mass_g, na.rm = TRUE ),
+            body_mass_g_min = min(body_mass_g, na.rm = TRUE),
+            body_mass_g_max = max(body_mass_g, na.rm = TRUE),
+            n = n())
+
+```
+
+
+
+
+
+
